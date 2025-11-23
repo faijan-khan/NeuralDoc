@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NeuralDoc - Study Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* PERMANENT ZEN THEME */
+        :root {
+            --bg-color: #f9f7f1; /* Cream Paper */
+            --card-bg: #ffffff;
+            --text-main: #2c1810; /* Dark Coffee */
+            --text-muted: #5d5652;
+            --primary-color: #2d6a4f; /* Forest Green */
+            --accent-color: #d4a373; /* Antique Gold */
+            --font-body: 'Merriweather', serif;
+            --border-radius: 8px;
+            --shadow: 0 4px 20px rgba(44, 24, 16, 0.06);
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main);
+            font-family: var(--font-body);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--primary-color);
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-box:hover { transform: translateY(-2px); box-shadow: var(--shadow); background-color: #fffcf5; }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Feature Icons for the Intro */
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(45, 106, 79, 0.1);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    
+    <div class="text-center mb-5 animate__animated animate__fadeInDown">
+        <h1 class="fw-bold display-5" style="color: var(--primary-color)">
+            <i class="fas fa-brain"></i> NeuralDoc
+        </h1>
+        <p class="lead text-muted">The Adaptive AI Study Engine.</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <form method="post" action="/upload" enctype="multipart/form-data">
+                <div class="upload-box text-center">
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: var(--primary-color)"></i>
+                    <h4 class="fw-bold">Drop your PDF here</h4>
+                    <p class="text-muted">We accept Lecture Slides, Notes, and Textbooks.</p>
+                    <input type="file" name="file" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                           onchange="this.form.submit()" style="cursor: pointer;">
+                </div>
+                <div id="loading" class="text-center mt-4 d-none">
+                    <div class="spinner-border" style="color: var(--primary-color)" role="status"></div>
+                    <p class="mt-2 fw-bold text-muted">Reading your document...</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger text-center shadow-sm">
+        <i class="fas fa-exclamation-triangle me-2"></i> <span th:text="${error}"></span>
+    </div>
+
+    <div th:unless="${study}" class="row text-center mt-5 animate__animated animate__fadeInUp">
+        <div class="col-12 mb-4">
+            <h5 class="text-muted text-uppercase small fw-bold" style="letter-spacing: 1px;">How it Works</h5>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+            <h5 class="fw-bold">1. The Zapp</h5>
+            <p class="text-muted small px-4">Instantly extracts the <strong>80/20 Summary</strong> and Key Concepts. Perfect for last-minute skimming.</p>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+            <h5 class="fw-bold">2. Professor Mode</h5>
+            <p class="text-muted small px-4">While you read, our AI generates <strong>Deep Dive Questions</strong> and grading checklists in the background.</p>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="feature-icon"><i class="fas fa-check-double"></i></div>
+            <h5 class="fw-bold">3. Active Recall</h5>
+            <p class="text-muted small px-4">Test yourself with <strong>Model Answers</strong> designed to mimic actual university exam grading schemes.</p>
+        </div>
+    </div>
+
+    <div th:if="${study}" class="animate__animated animate__fadeIn">
+        <h3 class="mb-4 text-center">Analysis for: <span class="fw-bold" th:text="${filename}">Doc</span></h3>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-5">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold" style="color: var(--primary-color)">
+                            <i class="fas fa-bolt"></i> Key Concepts
+                        </h5>
+                        <ul class="list-group list-group-flush mt-3">
+                            <li class="list-group-item bg-transparent border-0 ps-0" th:each="concept : ${study['key_concepts']}">
+                                <i class="fas fa-check-circle me-2" style="color: var(--primary-color)"></i>
+                                <span class="fw-bold" th:text="${concept}">Concept</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold" style="color: var(--accent-color)">
+                            <i class="fas fa-align-left"></i> Executive Summary
+                        </h5>
+                        <div class="p-4 mt-3 rounded" style="background: rgba(0,0,0,0.02); border-left: 4px solid var(--accent-color)">
+                            <p class="lead fs-6 mb-0" style="line-height: 1.8;" th:text="${study['summary']}">Summary...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-top border-4" style="border-color: var(--primary-color) !important">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <h4 class="card-title fw-bold mb-0" style="color: var(--text-main)">
+                        <i class="fas fa-layer-group me-2"></i> Professor's Deep Dive
+                    </h4>
+                    <span class="badge ms-3" style="background-color: var(--accent-color)">Hard Mode</span>
+                </div>
+                <p class="text-muted small">Comprehensive exam questions & grading criteria.</p>
+                
+                <div id="deep-dive-loader" class="text-center py-5">
+                    <div class="spinner-border" style="color: var(--accent-color)" role="status"></div>
+                    <span class="ms-2 fw-bold text-muted">Consulting the Professor...</span>
+                </div>
+
+                <div id="deep-dive-content" class="d-none mt-4">
+                    <div id="blooms-container">
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Analyze Another Document
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.querySelector('input[type="file"]').addEventListener('change', function() {
+        document.getElementById('loading').classList.remove('d-none');
+        // Hide the intro section immediately to reduce clutter while loading
+        const intro = document.querySelector('.mt-5.animate__animated');
+        if(intro) intro.style.display = 'none';
+    });
+</script>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const docId = /*[[${docId}]]*/ 0;
+        
+        if(docId) {
+            fetch(`/api/v1/ingest/deep-dive/${docId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(payload => {
+                    const data = JSON.parse(payload.data);
+                    
+                    document.getElementById('deep-dive-loader').classList.add('d-none');
+                    document.getElementById('deep-dive-content').classList.remove('d-none');
+
+                    const bloomsDiv = document.getElementById('blooms-container');
+                    
+                    data.blooms_taxonomy.forEach((q, index) => {
+                        
+                        let checklistHtml = q.checklist.map(item => 
+                            `<li><i class="fas fa-square-check me-2 opacity-50"></i>${item}</li>`
+                        ).join('');
+
+                        bloomsDiv.innerHTML += `
+                            <div class="card mb-4 border shadow-none" style="background: rgba(0,0,0,0.01)">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="fw-bold mb-0" style="color: var(--text-main)">Question ${index + 1}</h5>
+                                        <span class="badge bg-light text-dark border">${q.level}</span>
+                                    </div>
+                                    
+                                    <p class="fs-5 mb-4 fw-bold" style="color: var(--text-main)">${q.question}</p>
+                                    
+                                    <div class="p-3 rounded mb-3" style="background: white; border: 1px solid rgba(0,0,0,0.1)">
+                                        <h6 class="fw-bold small text-uppercase mb-2" style="color: var(--accent-color)">
+                                            <i class="fas fa-clipboard-list me-1"></i> Grading Checklist:
+                                        </h6>
+                                        <ul class="list-unstyled mb-0 small text-muted">
+                                            ${checklistHtml}
+                                        </ul>
+                                    </div>
+
+                                    <button class="btn btn-outline-primary btn-sm w-100 mt-2" 
+                                            type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#answer-${index}">
+                                        View Full Model Answer
+                                    </button>
+                                    
+                                    <div class="collapse mt-2" id="answer-${index}">
+                                        <div class="card card-body border-0 mt-2" style="background: white; color: var(--text-main); border-left: 4px solid var(--primary-color) !important; line-height: 1.8;">
+                                            ${q.model_answer}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                })
+                .catch(err => console.error("Deep Dive Error:", err));
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
