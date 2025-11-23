@@ -14,6 +14,8 @@ NeuralDoc is an AI-powered document analysis engine built to solve the **"Last M
 
 It features a **Progressive Loading UI** that delivers an instant Executive Summary (80/20 Rule) while asynchronously generating a "Professor's Deep Dive" (Bloom's Taxonomy Questions & Grading Checklists) in the background.
 
+<img src="https://github.com/faijan-khan/NeuralDoc/blob/main/image.png" width="100%" alt="NeuralDoc Demo">
+
 ## 🚀 Key Engineering Features
 
 ### ⚡ Ultra-Low Latency Ingestion ("The Zapp")
